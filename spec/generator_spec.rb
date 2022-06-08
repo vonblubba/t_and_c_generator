@@ -55,7 +55,7 @@ RSpec.describe Generator, '#perform' do
     let(:expected_document) { 'error: invalid sections' }
     let(:sections) { 'invalid' }
 
-    it 'returns invalid clause message' do
+    it 'returns invalid sections message' do
       expect(subject.perform).to eq expected_document
     end
   end
