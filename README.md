@@ -12,6 +12,11 @@ Project is structured similarly to a rails service: a single `Generator` class, 
 Document is generated calling `#perform` method on the class instance. All other methods are private.
 `#perfom` method executes a series of steps to generate the document; some initial data validation (which could probably be improved), clauses replacement and sections replacement.
 
+Also provided are an example of usage `application.rb` and dataset in `data` folder.
+Usage:
+
+`ruby application.rb data/template.txt data/clauses.json data/sections.json`
+
 Given more time, I would probably improve the test suite to cover more anomalous situations.
 
 This took me about 3,5 hours to complete.
