@@ -15,6 +15,7 @@ class Generator
   def perform
     return 'error: cannot find template file' unless load_template
     return 'error: invalid clauses' unless check_clauses
+    return 'error: invalid sections' unless check_sections
   end
 
   private
@@ -32,6 +33,18 @@ class Generator
       return false unless c.is_a?(Hash)
       return false if c[:id].nil?
       return false if c[:text].nil?
+    end
+
+    true
+  end
+
+  def check_sections
+    return false unless sections.is_a?(Array)
+
+    sections.each do |c|
+      return false unless c.is_a?(Hash)
+      return false if c[:id].nil?
+      return false unless c[:clauses_ids].is_a?(Array)
     end
 
     true
