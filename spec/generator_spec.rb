@@ -5,6 +5,28 @@ require 'generator'
 RSpec.describe Generator, '#perform' do
   subject { Generator.new(template_path, clauses, sections) }
 
+  context 'when provided template path does not exist' do
+    let(:template_path) { 'spec/fixtures/files/i_do_not_exist.txt' }
+    let(:clauses) do
+      [
+        { 'id': 1, 'text': 'The quick brown fox' },
+        { 'id': 2, 'text': 'jumps over the lazy dog' },
+        { 'id': 3, 'text': 'And dies' },
+        { 'id': 4, 'text': 'The white horse is white' }
+      ]
+    end
+    let(:expected_document) { 'error: cannot find template file' }
+    let(:sections) do
+      [
+        { 'id': 1, 'clauses_ids': [1, 2] }
+      ]
+    end
+
+    it 'returns template not found error message' do
+      expect(subject.perform).to eq expected_document
+    end
+  end
+
   context 'when provided invalid clauses' do
     let(:template_path) { 'spec/fixtures/files/template_00.txt' }
     let(:clauses) { 'invalid' }
