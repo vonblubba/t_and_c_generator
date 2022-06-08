@@ -18,5 +18,6 @@ Usage:
 `ruby application.rb data/template.txt data/clauses.json data/sections.json`
 
 Given more time, I would probably improve the test suite to cover more anomalous situations.
+Also, I would probably refactor using [dry-transaction](https://dry-rb.org/gems/dry-transaction/0.13/). Maybe in this case, given the simplicity of the task, it would be a little overengineered, but this is the way I normally choose when I have to perform complex procedures, composed of several steps, where any number on things could go wrong.
 
 This took me about 3,5 hours to complete.
