@@ -4,7 +4,7 @@ require 'pry'
 
 # Generates a document from a template and dataset
 class Generator
-  attr_reader :template_path, :template, :clauses, :sections
+  attr_reader :template_path, :template, :clauses, :sections, :document
 
   def initialize(template_path, clauses, sections)
     @template_path = template_path
@@ -16,6 +16,11 @@ class Generator
     return 'error: cannot find template file' unless load_template
     return 'error: invalid clauses' unless check_clauses
     return 'error: invalid sections' unless check_sections
+
+    replace_clauses
+    replace_sections
+
+    document
   end
 
   private
@@ -48,5 +53,38 @@ class Generator
     end
 
     true
+  end
+
+  def replace_clauses
+    @document = template
+
+    clauses.each { |c| @document.gsub!("[CLAUSE-#{c[:id]}]", c[:text]) }
+  end
+
+  def replace_sections
+    sections.each do |s|
+      formatted_section = format_section(s)
+      return false if formatted_section.nil?
+
+      @document.gsub!("[SECTION-#{s[:id]}]", formatted_section)
+    end
+  end
+
+  def format_section(section)
+    required_clauses = []
+
+    section[:clauses_ids].each do |cid|
+      selected_clauses = clauses.select { |c| c[:id] == cid }
+
+      # section contains a non existent clause
+      if selected_clauses.empty?
+        @document = "error: undefined clause with id #{cid} in dataset"
+        return nil
+      end
+
+      required_clauses << selected_clauses.first
+    end
+
+    required_clauses.compact.map { |c| c[:text] }.compact.join(';')
   end
 end
