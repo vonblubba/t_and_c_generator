@@ -29,16 +29,32 @@ RSpec.describe Generator, '#perform' do
 
   context 'when provided invalid clauses' do
     let(:template_path) { 'spec/fixtures/files/template_00.txt' }
-    let(:clauses) { 'invalid' }
-    let(:expected_document) { 'error: invalid clauses' }
     let(:sections) do
       [
         { 'id': 1, 'clauses_ids': [1, 2] }
       ]
     end
 
-    it 'returns invalid clause message' do
-      expect(subject.perform).to eq expected_document
+    context 'and clauses is not an array' do
+      let(:clauses) { 'invalid' }
+      let(:expected_document) { 'error: invalid clauses' }
+
+      it 'returns invalid clause message' do
+        expect(subject.perform).to eq expected_document
+      end
+    end
+
+    context 'and clauses hash is not in expected format' do
+      let(:clauses) do
+        [
+          { 'wrong_key_1': 1, 'wrong_key_2': 'The quick brown fox' }
+        ]
+      end
+      let(:expected_document) { 'error: invalid clause format' }
+
+      it 'returns invalid clause format' do
+        expect(subject.perform).to eq expected_document
+      end
     end
   end
 
@@ -52,11 +68,27 @@ RSpec.describe Generator, '#perform' do
         { 'id': 4, 'text': 'The white horse is white' }
       ]
     end
-    let(:expected_document) { 'error: invalid sections' }
-    let(:sections) { 'invalid' }
 
-    it 'returns invalid sections message' do
-      expect(subject.perform).to eq expected_document
+    context 'and sections is not an array' do
+      let(:expected_document) { 'error: invalid sections' }
+      let(:sections) { 'invalid' }
+
+      it 'returns invalid sections message' do
+        expect(subject.perform).to eq expected_document
+      end
+    end
+
+    context 'and section hash is not in expected format' do
+      let(:expected_document) { 'error: invalid section format' }
+      let(:sections) do
+        [
+          { 'id': 1, 'clauses_ids': 'worng_value' }
+        ]
+      end
+
+      it 'returns invalid section format message' do
+        expect(subject.perform).to eq expected_document
+      end
     end
   end
 
