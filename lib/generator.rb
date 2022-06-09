@@ -44,9 +44,10 @@ class Generator
     end
 
     clauses.each do |c|
-      return false unless c.is_a?(Hash)
-      return false if c[:id].nil?
-      return false if c[:text].nil?
+      unless c.is_a?(Hash) && !c[:id].nil? && !c[:text].nil?
+        @document = 'error: invalid clause format'
+        return false
+      end
     end
 
     true
@@ -59,9 +60,10 @@ class Generator
     end
 
     sections.each do |c|
-      return false unless c.is_a?(Hash)
-      return false if c[:id].nil?
-      return false unless c[:clauses_ids].is_a?(Array)
+      unless c.is_a?(Hash) && !c[:id].nil? && c[:clauses_ids].is_a?(Array)
+        @document = 'error: invalid section format'
+        return false
+      end
     end
 
     true
