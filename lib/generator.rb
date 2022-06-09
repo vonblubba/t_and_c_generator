@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'pry'
-
 # Generates a document from a template and dataset
 class Generator
   attr_reader :template_path, :template, :clauses, :sections, :document
@@ -13,12 +11,14 @@ class Generator
   end
 
   def perform
-    return 'error: cannot find template file' unless load_template
-    return 'error: invalid clauses' unless check_clauses
-    return 'error: invalid sections' unless check_sections
+    # data validation
+    return document unless load_template
+    return document unless check_clauses
+    return document unless check_sections
 
-    replace_clauses
-    replace_sections
+    # document generation
+    return document unless replace_clauses
+    return document unless replace_sections
 
     document
   end
@@ -26,13 +26,22 @@ class Generator
   private
 
   def load_template
-    return false unless File.exist?(template_path)
+    unless File.exist?(template_path)
+      @document = 'error: cannot find template file'
+      return false
+    end
 
     @template = File.read(template_path)
+    @document = template
+
+    true
   end
 
   def check_clauses
-    return false unless clauses.is_a?(Array)
+    unless clauses.is_a?(Array)
+      @document = 'error: invalid clauses'
+      return false
+    end
 
     clauses.each do |c|
       return false unless c.is_a?(Hash)
@@ -44,7 +53,10 @@ class Generator
   end
 
   def check_sections
-    return false unless sections.is_a?(Array)
+    unless sections.is_a?(Array)
+      @document = 'error: invalid sections'
+      return false
+    end
 
     sections.each do |c|
       return false unless c.is_a?(Hash)
@@ -56,9 +68,9 @@ class Generator
   end
 
   def replace_clauses
-    @document = template
-
     clauses.each { |c| @document.gsub!("[CLAUSE-#{c[:id]}]", c[:text]) }
+
+    true
   end
 
   def replace_sections
@@ -68,6 +80,8 @@ class Generator
 
       @document.gsub!("[SECTION-#{s[:id]}]", formatted_section)
     end
+
+    true
   end
 
   def format_section(section)
