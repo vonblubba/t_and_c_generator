@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+class TemplateNotFoundError < StandardError; end
+class InvalidClauseError < StandardError; end
+class InvalidSectionError < StandardError; end
+class UndefinedClauseError < StandardError; end
+
 # Generates a document from a template and dataset
 class Generator
   attr_reader :template_path, :template, :clauses, :sections, :document
@@ -12,13 +17,13 @@ class Generator
 
   def perform
     # data validation
-    return document unless load_template
-    return document unless check_clauses
-    return document unless check_sections
+    load_template
+    check_clauses
+    check_sections
 
     # document generation
-    return document unless replace_clauses
-    return document unless replace_sections
+    replace_clauses
+    replace_sections
 
     document
   end
@@ -26,64 +31,38 @@ class Generator
   private
 
   def load_template
-    unless File.exist?(template_path)
-      @document = 'error: cannot find template file'
-      return false
-    end
+    raise TemplateNotFoundError unless File.exist?(template_path)
 
     @template = File.read(template_path)
     @document = template
-
-    true
   end
 
   def check_clauses
-    unless clauses.is_a?(Array)
-      @document = 'error: invalid clauses'
-      return false
-    end
+    raise InvalidClauseError, 'clause is of wrong type' unless clauses.is_a?(Array)
 
     clauses.each do |c|
-      unless c.is_a?(Hash) && c.key?(:id) && c.key?(:text)
-        @document = 'error: invalid clause format'
-        return false
-      end
+      raise InvalidClauseError, 'invalid clause format' unless valid_clause?(c)
     end
-
-    true
   end
 
   def check_sections
-    unless sections.is_a?(Array)
-      @document = 'error: invalid sections'
-      return false
-    end
+    raise InvalidSectionError, 'section is of wrong type' unless sections.is_a?(Array)
 
     sections.each do |s|
-      unless s.is_a?(Hash) && s.key?(:id) && s[:clauses_ids].is_a?(Array)
-        @document = 'error: invalid section format'
-        return false
-      end
+      raise InvalidSectionError, 'invalid section format' unless valid_section?(s)
     end
-
-    true
   end
 
   def replace_clauses
     clauses.each { |c| @document.gsub!("[CLAUSE-#{c[:id]}]", c[:text]) }
-
-    true
   end
 
   def replace_sections
     sections.each do |s|
       formatted_section = format_section(s)
-      return false if formatted_section.nil?
 
       @document.gsub!("[SECTION-#{s[:id]}]", formatted_section)
     end
-
-    true
   end
 
   def format_section(section)
@@ -93,14 +72,19 @@ class Generator
       selected_clauses = clauses.select { |c| c[:id] == cid }
 
       # section contains a non existent clause
-      if selected_clauses.empty?
-        @document = "error: undefined clause with id #{cid} in dataset"
-        return nil
-      end
+      raise UndefinedClauseError, "clause #{cid} is undefined" if selected_clauses.empty?
 
       required_clauses << selected_clauses.first
     end
 
     required_clauses.compact.map { |c| c[:text] }.compact.join(';')
+  end
+
+  def valid_clause?(clause)
+    clause.is_a?(Hash) && clause.key?(:id) && clause.key?(:text)
+  end
+
+  def valid_section?(section)
+    section.is_a?(Hash) && section.key?(:id) && section[:clauses_ids].is_a?(Array)
   end
 end
