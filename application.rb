@@ -13,6 +13,9 @@ clauses = JSON.parse clauses_file, symbolize_names: true
 sections_file = File.read ARGV[2]
 sections = JSON.parse sections_file, symbolize_names: true
 
-generator = Generator.new(ARGV[0], clauses, sections)
-
-puts generator.perform
+begin
+  generator = Generator.new(ARGV[0], clauses, sections)
+  puts generator.perform
+rescue => e
+  puts e.message
+end

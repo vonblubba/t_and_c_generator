@@ -15,15 +15,14 @@ RSpec.describe Generator, '#perform' do
         { 'id': 4, 'text': 'The white horse is white' }
       ]
     end
-    let(:expected_document) { 'error: cannot find template file' }
     let(:sections) do
       [
         { 'id': 1, 'clauses_ids': [1, 2] }
       ]
     end
 
-    it 'returns template not found error message' do
-      expect(subject.perform).to eq expected_document
+    it 'returns raises TemplateNotFoundError' do
+      expect { subject.perform }.to raise_error(TemplateNotFoundError)
     end
   end
 
@@ -37,10 +36,9 @@ RSpec.describe Generator, '#perform' do
 
     context 'and clauses is not an array' do
       let(:clauses) { 'invalid' }
-      let(:expected_document) { 'error: invalid clauses' }
 
-      it 'returns invalid clause message' do
-        expect(subject.perform).to eq expected_document
+      it 'raises InvalidClauseError' do
+        expect { subject.perform }.to raise_error(InvalidClauseError, 'clause is of wrong type')
       end
     end
 
@@ -50,10 +48,9 @@ RSpec.describe Generator, '#perform' do
           { 'wrong_key_1': 1, 'wrong_key_2': 'The quick brown fox' }
         ]
       end
-      let(:expected_document) { 'error: invalid clause format' }
 
-      it 'returns invalid clause format' do
-        expect(subject.perform).to eq expected_document
+      it 'raises InvalidClauseError' do
+        expect { subject.perform }.to raise_error(InvalidClauseError, 'invalid clause format')
       end
     end
   end
@@ -70,24 +67,22 @@ RSpec.describe Generator, '#perform' do
     end
 
     context 'and sections is not an array' do
-      let(:expected_document) { 'error: invalid sections' }
       let(:sections) { 'invalid' }
 
-      it 'returns invalid sections message' do
-        expect(subject.perform).to eq expected_document
+      it 'raises InvalidSectionError' do
+        expect { subject.perform }.to raise_error(InvalidSectionError, 'section is of wrong type')
       end
     end
 
     context 'and section hash is not in expected format' do
-      let(:expected_document) { 'error: invalid section format' }
       let(:sections) do
         [
           { 'id': 1, 'clauses_ids': 'worng_value' }
         ]
       end
 
-      it 'returns invalid section format message' do
-        expect(subject.perform).to eq expected_document
+      it 'raises InvalidSectionError' do
+        expect { subject.perform }.to raise_error(InvalidSectionError, 'invalid section format')
       end
     end
   end
@@ -101,15 +96,14 @@ RSpec.describe Generator, '#perform' do
         { 'id': 4, 'text': 'The white horse is white' }
       ]
     end
-    let(:expected_document) { 'error: undefined clause with id 1 in dataset' }
     let(:sections) do
       [
         { 'id': 1, 'clauses_ids': [1, 2] }
       ]
     end
 
-    it 'generates undefined clause error' do
-      expect(subject.perform).to eq expected_document
+    it 'raises UndefinedClauseError' do
+      expect { subject.perform }.to raise_error(UndefinedClauseError, 'clause 1 is undefined')
     end
   end
 
